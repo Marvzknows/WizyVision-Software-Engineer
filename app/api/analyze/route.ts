@@ -1,11 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import type { NextRequest } from "next/server";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  if (!apiKey) return err("Server is missing GEMINI_API_KEY.", 500);
+
+  const ai = new GoogleGenAI({ apiKey });
   const form = await request.formData().catch(() => null);
   if (!form) return err("Request must be multipart/form-data.", 400);
 
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: [
         {
           parts: [

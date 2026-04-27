@@ -4,28 +4,55 @@ import { useState } from "react";
 import { UploadCard, type UploadedImage } from "./UploadCard";
 import { QuestionCard } from "./QuestionCard";
 import { AnalyzeButton } from "./AnalyzeButton";
-import { AnswerCard } from "./AnswerCard";
-import { ReasoningSteps, type ReasoningStep } from "./ReasoningSteps";
 import { ErrorAlert } from "./ErrorAlert";
 import { ThemeToggle } from "./ThemeToggle";
 
-type Result = {
-  lead: string;
-  body: string;
-  steps: ReasoningStep[];
-};
+type AnalyzeResponse = { answer: string } | { error: string };
 
 export function VisualQA() {
   const [image, setImage] = useState<UploadedImage | null>(null);
   const [question, setQuestion] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const canSubmit = image !== null && question.trim().length > 0;
+  const canSubmit = image !== null && question.trim().length > 0 && !isLoading;
 
-  const handleAnalyze = () => {
-    if (!canSubmit) return;
+  const handleAnalyze = async () => {
+    if (!canSubmit || !image) return;
     setError(null);
+    setIsLoading(true);
+
+    const form = new FormData();
+    form.append("image", image.file);
+    form.append("question", question.trim());
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        body: form,
+      });
+
+      const data: AnalyzeResponse = await res.json().catch(() => ({
+        error: "Server returned an invalid response.",
+      }));
+
+      if (!res.ok || "error" in data) {
+        const message =
+          "error" in data ? data.error : `Request failed (${res.status}).`;
+        console.error("[analyze] error:", message);
+        setError(message);
+        return;
+      }
+
+      console.log("[analyze] answer:", data.answer);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Network request failed.";
+      console.error("[analyze] error:", message);
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,23 +81,19 @@ export function VisualQA() {
         onError={setError}
       />
 
-      <QuestionCard value={question} onChange={setQuestion} disabled={false} />
+      <QuestionCard
+        value={question}
+        onChange={setQuestion}
+        disabled={isLoading}
+      />
 
       {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
       <AnalyzeButton
         onClick={handleAnalyze}
         disabled={!canSubmit}
-        loading={false}
+        loading={isLoading}
       />
-
-      {/* {status === "ready" && result && */}
-      {result && (
-        <>
-          <AnswerCard lead={result.lead} body={result.body} />
-          <ReasoningSteps steps={result.steps} />
-        </>
-      )}
     </div>
   );
 }
