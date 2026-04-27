@@ -6,6 +6,7 @@ import { QuestionCard } from "./QuestionCard";
 import { AnalyzeButton } from "./AnalyzeButton";
 import { ErrorAlert } from "./ErrorAlert";
 import { ThemeToggle } from "./ThemeToggle";
+import { AnswerMarkDown } from "./AnswerMarkdown";
 
 type AnalyzeResponse = { answer: string } | { error: string };
 
@@ -14,12 +15,14 @@ export function VisualQA() {
   const [question, setQuestion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [answer, setAnswer] = useState<string | null>(null);
 
   const canSubmit = image !== null && question.trim().length > 0 && !isLoading;
 
   const handleAnalyze = async () => {
     if (!canSubmit || !image) return;
     setError(null);
+    setAnswer(null);
     setIsLoading(true);
 
     const form = new FormData();
@@ -44,7 +47,8 @@ export function VisualQA() {
         return;
       }
 
-      console.log("[analyze] answer:", data.answer);
+      // console.log("answer:", data.answer);
+      setAnswer(data.answer);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Network request failed.";
@@ -94,6 +98,8 @@ export function VisualQA() {
         disabled={!canSubmit}
         loading={isLoading}
       />
+
+      {answer && <AnswerMarkDown answer={answer} />}
     </div>
   );
 }
