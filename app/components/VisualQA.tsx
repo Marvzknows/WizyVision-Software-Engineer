@@ -7,6 +7,7 @@ import { AnalyzeButton } from "./AnalyzeButton";
 import { AnswerCard } from "./AnswerCard";
 import { ReasoningSteps, type ReasoningStep } from "./ReasoningSteps";
 import { ErrorAlert } from "./ErrorAlert";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Result = {
   lead: string;
@@ -29,16 +30,19 @@ export function VisualQA() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-8">
-      <header className="mb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground-subtle">
-          WizyVision
-        </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-          Visual Q&amp;A
-        </h1>
-        <p className="mt-1 text-sm text-foreground-muted">
-          Upload an image and ask a question about it.
-        </p>
+      <header className="mb-2 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground-subtle">
+            WizyVision
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+            Visual Q&amp;A
+          </h1>
+          <p className="mt-1 text-sm text-foreground-muted">
+            Upload an image and ask a question about it.
+          </p>
+        </div>
+        <ThemeToggle />
       </header>
 
       <UploadCard
